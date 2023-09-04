@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ChukwuemekaAjah/gotools/events/emitter"
-	"github.com/ChukwuemekaAjah/gotools/events/printer"
 )
 
 func main() {
@@ -29,5 +28,4 @@ func main() {
 
 	AlertEmitter.Emit("shoot", "we", "dey", "wait", "you")
 	fmt.Println("Hello world")
-	printer.PrintHello("How are you today?")
 }

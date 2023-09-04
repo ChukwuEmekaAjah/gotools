@@ -7,12 +7,10 @@ import (
 type Emitter struct {
 	listeners    map[string][]func(eventName string, arguments ...interface{})
 	maxListeners uint
-	channel      chan map[string][]interface{}
 }
 
 func New() *Emitter {
-	newEmitter := Emitter{channel: make(chan map[string][]interface{}), maxListeners: 10, listeners: make(map[string][]func(eventName string, arguments ...interface{}))}
-	go newEmitter.listen()
+	newEmitter := Emitter{maxListeners: 10, listeners: make(map[string][]func(eventName string, arguments ...interface{}))}
 	return &newEmitter
 }
 
@@ -42,7 +40,12 @@ func (e *Emitter) RemoveAllListeners(eventName string) (*Emitter, error) {
 }
 
 func (e *Emitter) Emit(eventName string, arguments ...interface{}) {
-	e.channel <- map[string][]interface{}{eventName: arguments}
+
+	listeners := e.listeners[eventName]
+	for _, eventLister := range listeners {
+		eventLister(eventName, arguments...)
+	}
+
 }
 
 func (e *Emitter) On(eventName string, listener func(eventName string, arguments ...interface{})) {
@@ -102,20 +105,4 @@ func (e Emitter) Listeners(eventName string) []func(eventName string, arguments 
 	}
 
 	return e.listeners[eventName]
-}
-
-func (e *Emitter) listen() {
-	for {
-		select {
-		case event := <-e.channel:
-			for eventName, arguments := range event {
-				listeners := e.listeners[eventName]
-				for _, eventLister := range listeners {
-					eventLister(eventName, arguments...)
-				}
-			}
-
-		}
-	}
-
 }
